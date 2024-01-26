@@ -40,12 +40,15 @@ const searchInputEl = searchWrapEl.querySelector("input")
 const searchDelayEls = [...searchWrapEl.querySelectorAll("li")]
 
 searchStarterEl.addEventListener("click", showSearch)
-searchCloserEl.addEventListener("click", hideSearch)
+searchCloserEl.addEventListener("click", function (event) {
+    hideSearch()
+    event.stopPropagation()
+})
 searchShadowEl.addEventListener("click", hideSearch)
 
 function showSearch() {
     headerEl.classList.add("searching")
-    document.documentElement.classList.add("fixed")
+    stopScroll()
     headerMenuEls.reverse().forEach(function (el, index) {
         el.style.transitionDelay = .4 / headerMenuEls.length * index + "s"
     })
@@ -58,7 +61,7 @@ function showSearch() {
 }
 function hideSearch() {
     headerEl.classList.remove("searching")
-    document.documentElement.classList.remove("fixed")
+    playScroll()
     headerMenuEls.reverse().forEach(function (el, index) {
         el.style.transitionDelay = .4 / headerMenuEls.length * index + "s"
     })
@@ -67,6 +70,72 @@ function hideSearch() {
     })
     searchDelayEls.reverse()
     searchInputEl.value = ""
+}
+
+function playScroll() {
+    document.documentElement.classList.remove("fixed")
+}
+function stopScroll() {
+    document.documentElement.classList.add("fixed")
+}
+
+// MOBILE MENUING
+const menuStarterEl = document.querySelector("header .menu-starter")
+menuStarterEl.addEventListener("click", function () {
+    if(headerEl.classList.contains("menuing")) {
+        headerEl.classList.remove("menuing")
+        playScroll()
+        searchInputEl.value = ""
+    } else {
+        headerEl.classList.add("menuing")
+        stopScroll()
+    }
+})
+
+// MOBILE SEARCHING
+const searchTextFieldEl = document.querySelector("header .text-field")
+const searchCancelerEl = document.querySelector("header .search-canceler")
+searchTextFieldEl.addEventListener("click", function () {
+    headerEl.classList.add("searching--mobile")
+    searchInputEl.focus()
+})
+searchCancelerEl.addEventListener("click", function () {
+    headerEl.classList.remove("searching--mobile")
+})
+
+// RESET HEADER CLASSLIST
+window.addEventListener("resize", function () {
+    if(window.innerWidth <= 740) {
+        headerEl.classList.remove("searching")
+    } else {
+        headerEl.classList.remove("searching--mobile")
+    }
+})
+
+// NAVIGATION MENU TOGGLE
+const navEl = document.querySelector("nav")
+const navMenuTogglerEl = navEl.querySelector(".menu-toggler")
+const navMenuShadowEl = navEl.querySelector(".shadow")
+
+navMenuTogglerEl.addEventListener("click", function () {
+    if(navEl.classList.contains("menuing")) {
+        hideNavMenu()
+    } else {
+        showNavMenu()
+    }
+})
+
+window.addEventListener("click", hideNavMenu)
+navEl.addEventListener("click", function (event) {
+    event.stopPropagation()
+})
+navMenuShadowEl.addEventListener("click", hideNavMenu)
+
+function showNavMenu() {
+    navEl.classList.add("menuing")
+}
+function hideNavMenu() {
+    navEl.classList.remove("menuing")
 }
 
 // INTERSECTION OBSERVER
@@ -144,7 +213,8 @@ navigations.forEach(function (nav) {
 
     mapEl.innerHTML = /* html */ `
         <h3>
-            <div class="text">${nav.title}</div>
+            <span class="text">${nav.title}</span>
+            <span class="icon">+</span>
         </h3>
         <ul>
             ${mapList}
@@ -157,3 +227,12 @@ navigations.forEach(function (nav) {
 // THIS-YEAR
 const thisYearEl = document.querySelector(".this-year")
 thisYearEl.textContent = new Date().getFullYear()
+
+// MOBILE FOOTER NAVIGATION CONTROLL
+const mapEls = document.querySelectorAll("footer .navigations .map")
+mapEls.forEach(function (mapEl) {
+    const h3El = mapEl.querySelector("h3")
+    h3El.addEventListener("click", function () {
+        mapEl.classList.toggle("active")
+    })
+})
